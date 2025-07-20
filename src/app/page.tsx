@@ -544,41 +544,66 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-8">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl mr-3">
-                🧠
-              </div>
-              <span className="text-lg font-semibold text-gray-800">Neurosymbolic AI Framework</span>
-            </div>
-            <div className="flex space-x-6">
-              <a href="http://localhost:8000/docs" className="text-gray-500 hover:text-blue-600 flex items-center">
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-                API Docs
-              </a>
-              <a href="#" className="text-gray-500 hover:text-blue-600 flex items-center">
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                Documentation
-              </a>
-              <a href="#" className="text-gray-500 hover:text-blue-600 flex items-center">
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                Support
-              </a>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Chandan25Sharma - Neurosymbolic AI Framework. Combining the power of neural networks with symbolic reasoning.</p>
-          </div>
+      {/* Footer */}
+<footer className="relative bg-cover bg-center py-8" style={{ backgroundImage: "url('https://wallpaper.dog/large/5560387.jpg')" }}>
+  <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+  <div className="container mx-auto px-6 relative z-10">
+    <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="flex items-center mb-4 md:mb-0">
+        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl mr-3">
+          🧠
         </div>
-      </footer>
+        <span className="text-lg font-semibold text-white">Neurosymbolic AI Framework</span>
+      </div>
+      <div className="flex space-x-6">
+        <a href="http://localhost:8000/docs" className="text-gray-200 hover:text-blue-400 flex items-center">
+          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+          API Docs
+        </a>
+        <a href="#" className="text-gray-200 hover:text-blue-400 flex items-center">
+          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          Documentation
+        </a>
+        <a href="#" className="text-gray-200 hover:text-blue-400 flex items-center">
+          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          Support
+        </a>
+      </div>
+    </div>
+    
+    {/* Personal Links Section */}
+    <div className="mt-6 flex flex-wrap justify-center gap-4">
+      <a href="https://github.com/Chandan25sharma" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-blue-400 flex items-center">
+        <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+        </svg>
+        GitHub
+      </a>
+      <a href="https://portfolio-chandan-sharma.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-blue-400 flex items-center">
+        <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        Portfolio
+      </a>
+      <a href="mailto:mrchandansharma25@gmail.com" className="text-gray-200 hover:text-blue-400 flex items-center">
+        <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        Email
+      </a>
+    </div>
+    
+    <div className="mt-8 pt-8 border-t border-gray-400 text-center text-sm text-gray-200">
+      <p>© {new Date().getFullYear()} Chandan Sharma - Neurosymbolic AI Framework. Combining the power of neural networks with symbolic reasoning.</p>
+    </div>
+  </div>
+</footer>
     </div>
   );
 }
