@@ -91,10 +91,31 @@ async def startup_event():
 @app.get("/")
 async def root():
     """Health check endpoint"""
+    global text_classifier, image_classifier, symbol_mapper, inference_engine, explanation_builder
+    
+    if text_classifier is None:
+        logger.info("Initializing components from root endpoint...")
+        
+        # Initialize neural models
+        text_classifier = TextClassifier()
+        image_classifier = ImageClassifier()
+
+        # Initialize symbol mapper
+        symbol_mapper = SymbolMapper()
+
+        # Initialize reasoning engine
+        inference_engine = InferenceEngine()
+
+        # Initialize explanation builder
+        explanation_builder = ExplanationBuilder()
+        
+        logger.info("Components initialized!")
+    
     return {
         "message": "Neurosymbolic AI Framework API",
         "status": "running",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "framework": "FastAPI + Neural + Symbolic Reasoning"
     }
 
 @app.get("/health")
@@ -114,6 +135,27 @@ async def health_check():
 @app.post("/inference", response_model=InferenceResponse)
 async def run_inference(request: InferenceRequest):
     """Main inference endpoint that runs the full neurosymbolic pipeline"""
+    global text_classifier, image_classifier, symbol_mapper, inference_engine, explanation_builder
+    
+    # Ensure components are initialized
+    if text_classifier is None:
+        logger.info("Initializing components from inference endpoint...")
+        
+        # Initialize neural models
+        text_classifier = TextClassifier()
+        image_classifier = ImageClassifier()
+
+        # Initialize symbol mapper
+        symbol_mapper = SymbolMapper()
+
+        # Initialize reasoning engine
+        inference_engine = InferenceEngine()
+
+        # Initialize explanation builder
+        explanation_builder = ExplanationBuilder()
+        
+        logger.info("Components initialized!")
+    
     try:
         # Step 1: Neural prediction
         if request.input_type == "text":

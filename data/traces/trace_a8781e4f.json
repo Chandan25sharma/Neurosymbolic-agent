@@ -1,0 +1,119 @@
+{
+  "trace_id": "a8781e4f",
+  "timestamp": "2025-07-20T19:39:14.211452",
+  "session_info": {
+    "timestamp": "2025-07-20T19:39:14.211452",
+    "trace_type": "neurosymbolic_reasoning"
+  },
+  "neural_phase": {
+    "input_type": "text",
+    "model_output": {
+      "text": "This is a test text for classification",
+      "label": "GENERAL_NEUTRAL",
+      "confidence": 0.8506478519099026,
+      "raw_prediction": {
+        "label": "GENERAL_NEUTRAL",
+        "score": 0.8506478519099026
+      },
+      "entities": [],
+      "model_used": "mock-distilbert-text-classifier"
+    },
+    "processing_time": null,
+    "confidence_score": 0.8506478519099026
+  },
+  "symbol_extraction_phase": {
+    "symbols_extracted": [
+      "UNKNOWN_CLASSIFICATION",
+      "MEDIUM_CONFIDENCE"
+    ],
+    "symbol_count": 2,
+    "extraction_method": "grounded_mapping",
+    "grounding_applied": true
+  },
+  "reasoning_phase": {
+    "reasoning_chains": [
+      {
+        "chain_id": 0,
+        "final_conclusion": "FURTHER_ANALYSIS_NEEDED",
+        "overall_confidence": 0.7,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "default_unknown_classification_analysis",
+            "rule_description": "If classification is unknown, then further analysis is needed",
+            "premises": [
+              "UNKNOWN_CLASSIFICATION"
+            ],
+            "conclusion": "FURTHER_ANALYSIS_NEEDED",
+            "confidence": 0.7,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 1,
+        "final_conclusion": "VERIFICATION_RECOMMENDED",
+        "overall_confidence": 0.7,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "confidence_medium_verify",
+            "rule_description": "If confidence is medium, then verification is recommended",
+            "premises": [
+              "MEDIUM_CONFIDENCE"
+            ],
+            "conclusion": "VERIFICATION_RECOMMENDED",
+            "confidence": 0.7,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 2,
+        "final_conclusion": "PERFORM_GENERAL_ASSESSMENT",
+        "overall_confidence": 0.5,
+        "chain_type": "abductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "fallback_no_specific_rules_general_assessment",
+            "rule_description": "If no specific rules apply, then perform general assessment",
+            "premises": [],
+            "conclusion": "PERFORM_GENERAL_ASSESSMENT",
+            "confidence": 0.5,
+            "reasoning_type": "abductive"
+          }
+        ]
+      }
+    ],
+    "chain_count": 3,
+    "total_steps": 3,
+    "reasoning_types": [
+      "abductive",
+      "deductive"
+    ]
+  },
+  "analysis_metadata": {
+    "complexity_score": 0.235,
+    "confidence_distribution": {
+      "mean": 0.6333333333333333,
+      "min": 0.5,
+      "max": 0.7,
+      "distribution": {
+        "high": 0,
+        "medium": 3,
+        "low": 0
+      }
+    },
+    "domain_coverage": [
+      "confidence"
+    ],
+    "rule_usage": {
+      "default_unknown_classification_analysis": 1,
+      "confidence_medium_verify": 1,
+      "fallback_no_specific_rules_general_assessment": 1
+    }
+  }
+}

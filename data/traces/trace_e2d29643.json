@@ -1,0 +1,161 @@
+{
+  "trace_id": "e2d29643",
+  "timestamp": "2025-07-20T19:50:01.681697",
+  "session_info": {
+    "timestamp": "2025-07-20T19:50:01.681697",
+    "trace_type": "neurosymbolic_reasoning"
+  },
+  "neural_phase": {
+    "input_type": "text",
+    "model_output": {
+      "text": "This is a test text for toxicity detection",
+      "label": "TOXICITY_WARNING",
+      "confidence": 0.8403066975938693,
+      "raw_prediction": {
+        "label": "TOXICITY_WARNING",
+        "score": 0.8403066975938693
+      },
+      "entities": [],
+      "model_used": "mock-distilbert-text-classifier"
+    },
+    "processing_time": null,
+    "confidence_score": 0.8403066975938693
+  },
+  "symbol_extraction_phase": {
+    "symbols_extracted": [
+      "SUBSTANCE_TOXIC",
+      "MEDIUM_CONFIDENCE",
+      "HIGH_RISK"
+    ],
+    "symbol_count": 3,
+    "extraction_method": "grounded_mapping",
+    "grounding_applied": true
+  },
+  "reasoning_phase": {
+    "reasoning_chains": [
+      {
+        "chain_id": 0,
+        "final_conclusion": "HIGH_RISK_ASSESSMENT",
+        "overall_confidence": 0.9,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "toxic_substance_high_risk",
+            "rule_description": "If substance is toxic, then risk level is high",
+            "premises": [
+              "SUBSTANCE_TOXIC"
+            ],
+            "conclusion": "HIGH_RISK_ASSESSMENT",
+            "confidence": 0.9,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 1,
+        "final_conclusion": "IMMEDIATE_RISK_MITIGATION_REQUIRED",
+        "overall_confidence": 0.9,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "high_risk_immediate_mitigation",
+            "rule_description": "If high risk is identified, then immediate mitigation is required",
+            "premises": [
+              "HIGH_RISK"
+            ],
+            "conclusion": "IMMEDIATE_RISK_MITIGATION_REQUIRED",
+            "confidence": 0.9,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 2,
+        "final_conclusion": "RISK_ESCALATION_WARRANTED",
+        "overall_confidence": 0.85,
+        "chain_type": "inductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "multiple_risk_factors_escalation",
+            "rule_description": "If multiple risk factors are present, then risk escalation is warranted",
+            "premises": [],
+            "conclusion": "RISK_ESCALATION_WARRANTED",
+            "confidence": 0.85,
+            "reasoning_type": "inductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 3,
+        "final_conclusion": "VERIFICATION_RECOMMENDED",
+        "overall_confidence": 0.7,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "confidence_medium_verify",
+            "rule_description": "If confidence is medium, then verification is recommended",
+            "premises": [
+              "MEDIUM_CONFIDENCE"
+            ],
+            "conclusion": "VERIFICATION_RECOMMENDED",
+            "confidence": 0.7,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 4,
+        "final_conclusion": "SUMMARIZE_DECISION_PATH",
+        "overall_confidence": 0.7,
+        "chain_type": "meta",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "meta_reasoning_trace_complete",
+            "rule_description": "If reasoning process is complete, then summarize the decision path",
+            "premises": [],
+            "conclusion": "SUMMARIZE_DECISION_PATH",
+            "confidence": 0.7,
+            "reasoning_type": "meta"
+          }
+        ]
+      }
+    ],
+    "chain_count": 5,
+    "total_steps": 5,
+    "reasoning_types": [
+      "deductive",
+      "meta",
+      "inductive"
+    ]
+  },
+  "analysis_metadata": {
+    "complexity_score": 0.365,
+    "confidence_distribution": {
+      "mean": 0.8099999999999999,
+      "min": 0.7,
+      "max": 0.9,
+      "distribution": {
+        "high": 3,
+        "medium": 2,
+        "low": 0
+      }
+    },
+    "domain_coverage": [
+      "confidence",
+      "chemical",
+      "risk"
+    ],
+    "rule_usage": {
+      "toxic_substance_high_risk": 1,
+      "high_risk_immediate_mitigation": 1,
+      "multiple_risk_factors_escalation": 1,
+      "confidence_medium_verify": 1,
+      "meta_reasoning_trace_complete": 1
+    }
+  }
+}

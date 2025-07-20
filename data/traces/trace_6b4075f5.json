@@ -1,0 +1,61 @@
+{
+  "trace_id": "6b4075f5",
+  "timestamp": "2025-07-20T19:50:32.537962",
+  "session_info": {
+    "timestamp": "2025-07-20T19:50:32.537962",
+    "trace_type": "neurosymbolic_reasoning"
+  },
+  "neural_phase": {
+    "input_type": "unknown",
+    "model_output": {
+      "label": "TOXIC_SUBSTANCE",
+      "confidence": 0.8
+    },
+    "processing_time": null,
+    "confidence_score": 0.8
+  },
+  "symbol_extraction_phase": {
+    "symbols_extracted": [
+      "TOXIC_SUBSTANCE"
+    ],
+    "symbol_count": 1,
+    "extraction_method": "grounded_mapping",
+    "grounding_applied": true
+  },
+  "reasoning_phase": {
+    "reasoning_chains": [
+      {
+        "rule_id": "test_rule",
+        "rule_description": "Test rule description",
+        "premises": [
+          "premise1"
+        ],
+        "conclusion": "test conclusion",
+        "confidence": 0.8,
+        "reasoning_type": "deductive"
+      }
+    ],
+    "chain_count": 1,
+    "total_steps": 0,
+    "reasoning_types": [
+      ""
+    ]
+  },
+  "analysis_metadata": {
+    "complexity_score": 0.08,
+    "confidence_distribution": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0,
+      "distribution": {
+        "high": 0,
+        "medium": 0,
+        "low": 1
+      }
+    },
+    "domain_coverage": [
+      "chemical"
+    ],
+    "rule_usage": {}
+  }
+}

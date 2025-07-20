@@ -1,0 +1,139 @@
+{
+  "trace_id": "d2a01245",
+  "timestamp": "2025-07-20T19:51:29.656045",
+  "session_info": {
+    "timestamp": "2025-07-20T19:51:29.656045",
+    "trace_type": "neurosymbolic_reasoning"
+  },
+  "neural_phase": {
+    "input_type": "text",
+    "model_output": {
+      "text": "Testing neurosymbolic AI framework with safety analysis",
+      "label": "SAFETY_POSITIVE",
+      "confidence": 0.755777562087249,
+      "raw_prediction": {
+        "label": "SAFETY_POSITIVE",
+        "score": 0.755777562087249
+      },
+      "entities": [],
+      "model_used": "mock-distilbert-text-classifier"
+    },
+    "processing_time": null,
+    "confidence_score": 0.755777562087249
+  },
+  "symbol_extraction_phase": {
+    "symbols_extracted": [
+      "SUBSTANCE_SAFE",
+      "MEDIUM_CONFIDENCE"
+    ],
+    "symbol_count": 2,
+    "extraction_method": "grounded_mapping",
+    "grounding_applied": true
+  },
+  "reasoning_phase": {
+    "reasoning_chains": [
+      {
+        "chain_id": 0,
+        "final_conclusion": "LOW_RISK_ASSESSMENT",
+        "overall_confidence": 0.8,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "safe_substance_low_risk",
+            "rule_description": "If substance is confirmed safe, then risk level is low",
+            "premises": [
+              "SUBSTANCE_SAFE"
+            ],
+            "conclusion": "LOW_RISK_ASSESSMENT",
+            "confidence": 0.8,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 1,
+        "final_conclusion": "RECONCILE_CONFLICTING_CONCLUSIONS",
+        "overall_confidence": 0.8,
+        "chain_type": "meta",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "meta_multiple_conflicting_conclusions",
+            "rule_description": "If multiple conflicting conclusions exist, then reconciliation is needed",
+            "premises": [],
+            "conclusion": "RECONCILE_CONFLICTING_CONCLUSIONS",
+            "confidence": 0.8,
+            "reasoning_type": "meta"
+          }
+        ]
+      },
+      {
+        "chain_id": 2,
+        "final_conclusion": "VERIFICATION_RECOMMENDED",
+        "overall_confidence": 0.7,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "confidence_medium_verify",
+            "rule_description": "If confidence is medium, then verification is recommended",
+            "premises": [
+              "MEDIUM_CONFIDENCE"
+            ],
+            "conclusion": "VERIFICATION_RECOMMENDED",
+            "confidence": 0.7,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 3,
+        "final_conclusion": "PERFORM_GENERAL_ASSESSMENT",
+        "overall_confidence": 0.5,
+        "chain_type": "abductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "fallback_no_specific_rules_general_assessment",
+            "rule_description": "If no specific rules apply, then perform general assessment",
+            "premises": [],
+            "conclusion": "PERFORM_GENERAL_ASSESSMENT",
+            "confidence": 0.5,
+            "reasoning_type": "abductive"
+          }
+        ]
+      }
+    ],
+    "chain_count": 4,
+    "total_steps": 4,
+    "reasoning_types": [
+      "abductive",
+      "deductive",
+      "meta"
+    ]
+  },
+  "analysis_metadata": {
+    "complexity_score": 0.31,
+    "confidence_distribution": {
+      "mean": 0.7,
+      "min": 0.5,
+      "max": 0.8,
+      "distribution": {
+        "high": 2,
+        "medium": 2,
+        "low": 0
+      }
+    },
+    "domain_coverage": [
+      "chemical",
+      "confidence"
+    ],
+    "rule_usage": {
+      "safe_substance_low_risk": 1,
+      "meta_multiple_conflicting_conclusions": 1,
+      "confidence_medium_verify": 1,
+      "fallback_no_specific_rules_general_assessment": 1
+    }
+  }
+}

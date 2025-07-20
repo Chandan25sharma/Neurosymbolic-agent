@@ -1,0 +1,194 @@
+{
+  "trace_id": "348a8750",
+  "timestamp": "2025-07-20T19:50:01.710946",
+  "session_info": {
+    "timestamp": "2025-07-20T19:50:01.710946",
+    "trace_type": "neurosymbolic_reasoning"
+  },
+  "neural_phase": {
+    "input_type": "image",
+    "model_output": {
+      "image_processed": true,
+      "label": "CHEMICAL_COMPOUND",
+      "confidence": 0.6790544157861893,
+      "top_predictions": [
+        {
+          "label": "CHEMICAL_COMPOUND",
+          "score": 0.6790544157861893,
+          "index": 1
+        },
+        {
+          "label": "BIOLOGICAL_ENTITY",
+          "score": 0.4554267933614645,
+          "index": 2
+        },
+        {
+          "label": "SAFETY_HAZARD",
+          "score": 0.3894053595317256,
+          "index": 4
+        },
+        {
+          "label": "MOLECULAR_STRUCTURE",
+          "score": 0.2426579417777006,
+          "index": 0
+        },
+        {
+          "label": "MEDICAL_IMAGE",
+          "score": 0.08419791914582016,
+          "index": 3
+        }
+      ],
+      "visual_features": {
+        "dimensions": {
+          "width": 712,
+          "height": 625,
+          "channels": 3
+        },
+        "color_analysis": {
+          "mean_brightness": 92.67727326834569,
+          "color_variance": 99.0530396797602,
+          "dominant_colors": [
+            [
+              83,
+              239,
+              191
+            ],
+            [
+              167,
+              170,
+              39
+            ],
+            [
+              113,
+              170,
+              128
+            ]
+          ]
+        },
+        "complexity": {
+          "edge_density": 41.979977368608104,
+          "texture_measure": 10.78742869701889
+        }
+      },
+      "model_used": "mock-vit-image-classifier"
+    },
+    "processing_time": null,
+    "confidence_score": 0.6790544157861893
+  },
+  "symbol_extraction_phase": {
+    "symbols_extracted": [
+      "SUBSTANCE_UNKNOWN",
+      "LOW_CONFIDENCE",
+      "MODERATE_STRUCTURE"
+    ],
+    "symbol_count": 3,
+    "extraction_method": "grounded_mapping",
+    "grounding_applied": true
+  },
+  "reasoning_phase": {
+    "reasoning_chains": [
+      {
+        "chain_id": 0,
+        "final_conclusion": "CAUTION_REQUIRED",
+        "overall_confidence": 0.7,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "unknown_substance_caution",
+            "rule_description": "If substance safety is unknown, then caution is required",
+            "premises": [
+              "SUBSTANCE_UNKNOWN"
+            ],
+            "conclusion": "CAUTION_REQUIRED",
+            "confidence": 0.7,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 1,
+        "final_conclusion": "SUMMARIZE_DECISION_PATH",
+        "overall_confidence": 0.7,
+        "chain_type": "meta",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "meta_reasoning_trace_complete",
+            "rule_description": "If reasoning process is complete, then summarize the decision path",
+            "premises": [],
+            "conclusion": "SUMMARIZE_DECISION_PATH",
+            "confidence": 0.7,
+            "reasoning_type": "meta"
+          }
+        ]
+      },
+      {
+        "chain_id": 2,
+        "final_conclusion": "CONSULT_MULTIPLE_SOURCES",
+        "overall_confidence": 0.6400000000000001,
+        "chain_type": "deductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "confidence_low_multiple_sources",
+            "rule_description": "If confidence is low, then multiple sources should be consulted",
+            "premises": [
+              "LOW_CONFIDENCE"
+            ],
+            "conclusion": "CONSULT_MULTIPLE_SOURCES",
+            "confidence": 0.6400000000000001,
+            "reasoning_type": "deductive"
+          }
+        ]
+      },
+      {
+        "chain_id": 3,
+        "final_conclusion": "PERFORM_GENERAL_ASSESSMENT",
+        "overall_confidence": 0.5,
+        "chain_type": "abductive",
+        "steps": [
+          {
+            "step_id": 0,
+            "rule_id": "fallback_no_specific_rules_general_assessment",
+            "rule_description": "If no specific rules apply, then perform general assessment",
+            "premises": [],
+            "conclusion": "PERFORM_GENERAL_ASSESSMENT",
+            "confidence": 0.5,
+            "reasoning_type": "abductive"
+          }
+        ]
+      }
+    ],
+    "chain_count": 4,
+    "total_steps": 4,
+    "reasoning_types": [
+      "deductive",
+      "meta",
+      "abductive"
+    ]
+  },
+  "analysis_metadata": {
+    "complexity_score": 0.34,
+    "confidence_distribution": {
+      "mean": 0.635,
+      "min": 0.5,
+      "max": 0.7,
+      "distribution": {
+        "high": 0,
+        "medium": 4,
+        "low": 0
+      }
+    },
+    "domain_coverage": [
+      "confidence",
+      "chemical"
+    ],
+    "rule_usage": {
+      "unknown_substance_caution": 1,
+      "meta_reasoning_trace_complete": 1,
+      "confidence_low_multiple_sources": 1,
+      "fallback_no_specific_rules_general_assessment": 1
+    }
+  }
+}
