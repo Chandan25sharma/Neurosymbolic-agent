@@ -10,8 +10,8 @@ interface InferenceResult {
     text?: string;
   };
   symbols: string[];
-  reasoning_chain: any[];
-  explanation: any;
+reasoning_chain: { description?: string }[];
+explanation: Record<string, unknown>;
   confidence_score: number;
 }
 
@@ -575,7 +575,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Neurosymbolic AI Framework. Combining the power of neural networks with symbolic reasoning.</p>
+            <p>© {new Date().getFullYear()} Chandan25Sharma - Neurosymbolic AI Framework. Combining the power of neural networks with symbolic reasoning.</p>
           </div>
         </div>
       </footer>

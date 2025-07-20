@@ -9,8 +9,8 @@ interface InferenceResult {
     text?: string;
   };
   symbols: string[];
-  reasoning_chain: any[];
-  explanation: any;
+  reasoning_chain: string[];
+  explanation: string | object; // Use a more specific type for explanation
   confidence_score: number;
 }
 
@@ -217,7 +217,9 @@ export default function SimplePage() {
                   <h3 className="font-semibold mb-2">📖 Explanation</h3>
                   <div className="text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
                     <pre className="whitespace-pre-wrap">
-                      {JSON.stringify(result.explanation, null, 2)}
+                      {typeof result.explanation === "string"
+                        ? result.explanation
+                        : JSON.stringify(result.explanation, null, 2)}
                     </pre>
                   </div>
                 </div>
