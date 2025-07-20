@@ -1,0 +1,45 @@
+# Core FastAPI dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Neural Network libraries
+torch==2.7.1
+torchvision==0.19.1
+transformers==4.46.0
+huggingface-hub==0.26.0
+numpy==1.26.0
+scikit-learn==1.5.0
+
+# Symbolic reasoning and logic
+z3-solver==4.12.2.0
+sympy==1.12
+networkx==3.2
+
+# Data processing
+pandas==2.1.0
+opencv-python==4.8.1.78
+pillow==10.0.1
+
+# API and utilities
+requests==2.31.0
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Visualization and explanation
+graphviz==0.20.1
+matplotlib==3.8.0
+plotly==5.17.0
+
+# Database
+sqlalchemy==2.0.34
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Development
+python-dotenv==1.0.0
+black==23.10.0
+flake8==6.1.0
