@@ -64,7 +64,6 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                asChild
                 className="bg-green-600 hover:bg-green-700 text-white border-0"
               >
                 <Link href="/analysis">Start Analysis</Link>
@@ -72,7 +71,6 @@ export default function Dashboard() {
               <Button
                 variant="outline"
                 size="lg"
-                asChild
                 className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white dark:border-green-400 dark:text-green-400 dark:hover:bg-green-400 dark:hover:text-black"
               >
                 <Link href="/documentation">View Documentation</Link>
@@ -174,7 +172,6 @@ export default function Dashboard() {
               <Button
                 size="lg"
                 variant="secondary"
-                asChild
                 className="bg-white text-green-600 hover:bg-gray-100 border-0"
               >
                 <Link href="/analysis">Try Live Analysis</Link>
@@ -183,7 +180,6 @@ export default function Dashboard() {
                 size="lg"
                 variant="outline"
                 className="bg-transparent border-white text-white hover:bg-white hover:text-green-600"
-                asChild
               >
                 <Link href="/api">Explore API</Link>
               </Button>
