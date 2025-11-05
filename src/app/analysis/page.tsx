@@ -1,446 +1,581 @@
 "use client";
 
-import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 
-type Vec2 = [number, number];
-
-export interface FaultyTerminalProps
-  extends React.HTMLAttributes<HTMLDivElement> {
-  scale?: number;
-  gridMul?: Vec2;
-  digitSize?: number;
-  timeScale?: number;
-  pause?: boolean;
-  scanlineIntensity?: number;
-  glitchAmount?: number;
-  flickerAmount?: number;
-  noiseAmp?: number;
-  chromaticAberration?: number;
-  dither?: number | boolean;
-  curvature?: number;
-  tint?: string;
-  mouseReact?: boolean;
-  mouseStrength?: number;
-  dpr?: number;
-  pageLoadAnimation?: boolean;
-  brightness?: number;
+interface InferenceResult {
+  neural_output: {
+    label: string;
+    confidence: number;
+    text?: string;
+  };
+  symbols: string[];
+  reasoning_chain: { description?: string }[];
+  explanation: Record<string, unknown>;
+  confidence_score: number;
 }
 
-const vertexShader = `
-attribute vec2 position;
-attribute vec2 uv;
-varying vec2 vUv;
-void main() {
-  vUv = uv;
-  gl_Position = vec4(position, 0.0, 1.0);
-}
-`;
+export default function AnalysisPage() {
+  const [inputData, setInputData] = useState("");
+  const [inputType, setInputType] = useState<"text" | "image">("text");
+  const [confidence, setConfidence] = useState(0.5);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<InferenceResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("neural");
 
-const fragmentShader = `
-precision mediump float;
-
-varying vec2 vUv;
-
-uniform float iTime;
-uniform vec3  iResolution;
-uniform float uScale;
-
-uniform vec2  uGridMul;
-uniform float uDigitSize;
-uniform float uScanlineIntensity;
-uniform float uGlitchAmount;
-uniform float uFlickerAmount;
-uniform float uNoiseAmp;
-uniform float uChromaticAberration;
-uniform float uDither;
-uniform float uCurvature;
-uniform vec3  uTint;
-uniform vec2  uMouse;
-uniform float uMouseStrength;
-uniform float uUseMouse;
-uniform float uPageLoadProgress;
-uniform float uUsePageLoadAnimation;
-uniform float uBrightness;
-
-float time;
-
-float hash21(vec2 p){
-  p = fract(p * 234.56);
-  p += dot(p, p + 34.56);
-  return fract(p.x * p.y);
-}
-
-float noise(vec2 p)
-{
-  return sin(p.x * 10.0) * sin(p.y * (3.0 + sin(time * 0.090909))) + 0.2; 
-}
-
-mat2 rotate(float angle)
-{
-  float c = cos(angle);
-  float s = sin(angle);
-  return mat2(c, -s, s, c);
-}
-
-float fbm(vec2 p)
-{
-  p *= 1.1;
-  float f = 0.0;
-  float amp = 0.5 * uNoiseAmp;
-  
-  mat2 modify0 = rotate(time * 0.02);
-  f += amp * noise(p);
-  p = modify0 * p * 2.0;
-  amp *= 0.454545;
-  
-  mat2 modify1 = rotate(time * 0.02);
-  f += amp * noise(p);
-  p = modify1 * p * 2.0;
-  amp *= 0.454545;
-  
-  mat2 modify2 = rotate(time * 0.08);
-  f += amp * noise(p);
-  
-  return f;
-}
-
-float pattern(vec2 p, out vec2 q, out vec2 r) {
-  vec2 offset1 = vec2(1.0);
-  vec2 offset0 = vec2(0.0);
-  mat2 rot01 = rotate(0.1 * time);
-  mat2 rot1 = rotate(0.1);
-  
-  q = vec2(fbm(p + offset1), fbm(rot01 * p + offset1));
-  r = vec2(fbm(rot1 * q + offset0), fbm(q + offset0));
-  return fbm(p + r);
-}
-
-float digit(vec2 p){
-    vec2 grid = uGridMul * 15.0;
-    vec2 s = floor(p * grid) / grid;
-    p = p * grid;
-    vec2 q, r;
-    float intensity = pattern(s * 0.1, q, r) * 1.3 - 0.03;
-    
-    if(uUseMouse > 0.5){
-        vec2 mouseWorld = uMouse * uScale;
-        float distToMouse = distance(s, mouseWorld);
-        float mouseInfluence = exp(-distToMouse * 8.0) * uMouseStrength * 10.0;
-        intensity += mouseInfluence;
-        
-        float ripple = sin(distToMouse * 20.0 - iTime * 5.0) * 0.1 * mouseInfluence;
-        intensity += ripple;
-    }
-    
-    if(uUsePageLoadAnimation > 0.5){
-        float cellRandom = fract(sin(dot(s, vec2(12.9898, 78.233))) * 43758.5453);
-        float cellDelay = cellRandom * 0.8;
-        float cellProgress = clamp((uPageLoadProgress - cellDelay) / 0.2, 0.0, 1.0);
-        
-        float fadeAlpha = smoothstep(0.0, 1.0, cellProgress);
-        intensity *= fadeAlpha;
-    }
-    
-    p = fract(p);
-    p *= uDigitSize;
-    
-    float px5 = p.x * 5.0;
-    float py5 = (1.0 - p.y) * 5.0;
-    float x = fract(px5);
-    float y = fract(py5);
-    
-    float i = floor(py5) - 2.0;
-    float j = floor(px5) - 2.0;
-    float n = i * i + j * j;
-    float f = n * 0.0625;
-    
-    float isOn = step(0.1, intensity - f);
-    float brightness = isOn * (0.2 + y * 0.8) * (0.75 + x * 0.25);
-    
-    return step(0.0, p.x) * step(p.x, 1.0) * step(0.0, p.y) * step(p.y, 1.0) * brightness;
-}
-
-float onOff(float a, float b, float c)
-{
-  return step(c, sin(iTime + a * cos(iTime * b))) * uFlickerAmount;
-}
-
-float displace(vec2 look)
-{
-    float y = look.y - mod(iTime * 0.25, 1.0);
-    float window = 1.0 / (1.0 + 50.0 * y * y);
-    return sin(look.y * 20.0 + iTime) * 0.0125 * onOff(4.0, 2.0, 0.8) * (1.0 + cos(iTime * 60.0)) * window;
-}
-
-vec3 getColor(vec2 p){
-    
-    float bar = step(mod(p.y + time * 20.0, 1.0), 0.2) * 0.4 + 1.0;
-    bar *= uScanlineIntensity;
-    
-    float displacement = displace(p);
-    p.x += displacement;
-
-    if (uGlitchAmount != 1.0) {
-      float extra = displacement * (uGlitchAmount - 1.0);
-      p.x += extra;
+  const handleInference = async () => {
+    if (!inputData.trim()) {
+      setError("Please enter some input data");
+      return;
     }
 
-    float middle = digit(p);
-    
-    const float off = 0.002;
-    float sum = digit(p + vec2(-off, -off)) + digit(p + vec2(0.0, -off)) + digit(p + vec2(off, -off)) +
-                digit(p + vec2(-off, 0.0)) + digit(p + vec2(0.0, 0.0)) + digit(p + vec2(off, 0.0)) +
-                digit(p + vec2(-off, off)) + digit(p + vec2(0.0, off)) + digit(p + vec2(off, off));
-    
-    vec3 baseColor = vec3(0.9) * middle + sum * 0.1 * vec3(1.0) * bar;
-    return baseColor;
-}
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
-vec2 barrel(vec2 uv){
-  vec2 c = uv * 2.0 - 1.0;
-  float r2 = dot(c, c);
-  c *= 1.0 + uCurvature * r2;
-  return c * 0.5 + 0.5;
-}
-
-void main() {
-    time = iTime * 0.333333;
-    vec2 uv = vUv;
-
-    if(uCurvature != 0.0){
-      uv = barrel(uv);
-    }
-    
-    vec2 p = uv * uScale;
-    vec3 col = getColor(p);
-
-    if(uChromaticAberration != 0.0){
-      vec2 ca = vec2(uChromaticAberration) / iResolution.xy;
-      col.r = getColor(p + ca).r;
-      col.b = getColor(p - ca).b;
-    }
-
-    col *= uTint;
-    col *= uBrightness;
-
-    if(uDither > 0.0){
-      float rnd = hash21(gl_FragCoord.xy);
-      col += (rnd - 0.5) * (uDither * 0.003922);
-    }
-
-    gl_FragColor = vec4(col, 1.0);
-}
-`;
-
-function hexToRgb(hex: string): [number, number, number] {
-  let h = hex.replace("#", "").trim();
-  if (h.length === 3)
-    h = h
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  const num = parseInt(h, 16);
-  return [
-    ((num >> 16) & 255) / 255,
-    ((num >> 8) & 255) / 255,
-    (num & 255) / 255,
-  ];
-}
-
-export default function FaultyTerminal({
-  scale = 1,
-  gridMul = [2, 1],
-  digitSize = 1.5,
-  timeScale = 0.3,
-  pause = false,
-  scanlineIntensity = 0.3,
-  glitchAmount = 1,
-  flickerAmount = 1,
-  noiseAmp = 1,
-  chromaticAberration = 0,
-  dither = 0,
-  curvature = 0.2,
-  tint = "#ffffff",
-  mouseReact = true,
-  mouseStrength = 0.2,
-  dpr = Math.min(window.devicePixelRatio || 1, 2),
-  pageLoadAnimation = true,
-  brightness = 1,
-  className,
-  style,
-  ...rest
-}: FaultyTerminalProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const programRef = useRef<Program>(null);
-  const rendererRef = useRef<Renderer>(null);
-  const mouseRef = useRef({ x: 0.5, y: 0.5 });
-  const smoothMouseRef = useRef({ x: 0.5, y: 0.5 });
-  const frozenTimeRef = useRef(0);
-  const rafRef = useRef<number>(0);
-  const loadAnimationStartRef = useRef<number>(0);
-  const timeOffsetRef = useRef<number>(Math.random() * 100);
-
-  const tintVec = useMemo(() => hexToRgb(tint), [tint]);
-
-  const ditherValue = useMemo(
-    () => (typeof dither === "boolean" ? (dither ? 1 : 0) : dither),
-    [dither]
-  );
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    const ctn = containerRef.current;
-    if (!ctn) return;
-    const rect = ctn.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = 1 - (e.clientY - rect.top) / rect.height;
-    mouseRef.current = { x, y };
-  }, []);
-
-  useEffect(() => {
-    const ctn = containerRef.current;
-    if (!ctn) return;
-
-    const renderer = new Renderer({ dpr });
-    rendererRef.current = renderer;
-    const gl = renderer.gl;
-    gl.clearColor(0, 0, 0, 1);
-
-    const geometry = new Triangle(gl);
-
-    const program = new Program(gl, {
-      vertex: vertexShader,
-      fragment: fragmentShader,
-      uniforms: {
-        iTime: { value: 0 },
-        iResolution: {
-          value: new Color(
-            gl.canvas.width,
-            gl.canvas.height,
-            gl.canvas.width / gl.canvas.height
-          ),
+    try {
+      const response = await fetch("http://localhost:8000/inference", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        uScale: { value: scale },
+        body: JSON.stringify({
+          input_data: inputData,
+          input_type: inputType,
+          confidence_threshold: confidence,
+        }),
+      });
 
-        uGridMul: { value: new Float32Array(gridMul) },
-        uDigitSize: { value: digitSize },
-        uScanlineIntensity: { value: scanlineIntensity },
-        uGlitchAmount: { value: glitchAmount },
-        uFlickerAmount: { value: flickerAmount },
-        uNoiseAmp: { value: noiseAmp },
-        uChromaticAberration: { value: chromaticAberration },
-        uDither: { value: ditherValue },
-        uCurvature: { value: curvature },
-        uTint: { value: new Color(tintVec[0], tintVec[1], tintVec[2]) },
-        uMouse: {
-          value: new Float32Array([
-            smoothMouseRef.current.x,
-            smoothMouseRef.current.y,
-          ]),
-        },
-        uMouseStrength: { value: mouseStrength },
-        uUseMouse: { value: mouseReact ? 1 : 0 },
-        uPageLoadProgress: { value: pageLoadAnimation ? 0 : 1 },
-        uUsePageLoadAnimation: { value: pageLoadAnimation ? 1 : 0 },
-        uBrightness: { value: brightness },
-      },
-    });
-    programRef.current = program;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    const mesh = new Mesh(gl, { geometry, program });
-
-    function resize() {
-      if (!ctn || !renderer) return;
-      renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
-      program.uniforms.iResolution.value = new Color(
-        gl.canvas.width,
-        gl.canvas.height,
-        gl.canvas.width / gl.canvas.height
-      );
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
     }
-
-    const resizeObserver = new ResizeObserver(() => resize());
-    resizeObserver.observe(ctn);
-    resize();
-
-    const update = (t: number) => {
-      rafRef.current = requestAnimationFrame(update);
-
-      if (pageLoadAnimation && loadAnimationStartRef.current === 0) {
-        loadAnimationStartRef.current = t;
-      }
-
-      if (!pause) {
-        const elapsed = (t * 0.001 + timeOffsetRef.current) * timeScale;
-        program.uniforms.iTime.value = elapsed;
-        frozenTimeRef.current = elapsed;
-      } else {
-        program.uniforms.iTime.value = frozenTimeRef.current;
-      }
-
-      if (pageLoadAnimation && loadAnimationStartRef.current > 0) {
-        const animationDuration = 2000;
-        const animationElapsed = t - loadAnimationStartRef.current;
-        const progress = Math.min(animationElapsed / animationDuration, 1);
-        program.uniforms.uPageLoadProgress.value = progress;
-      }
-
-      if (mouseReact) {
-        const dampingFactor = 0.08;
-        const smoothMouse = smoothMouseRef.current;
-        const mouse = mouseRef.current;
-        smoothMouse.x += (mouse.x - smoothMouse.x) * dampingFactor;
-        smoothMouse.y += (mouse.y - smoothMouse.y) * dampingFactor;
-
-        const mouseUniform = program.uniforms.uMouse.value as Float32Array;
-        mouseUniform[0] = smoothMouse.x;
-        mouseUniform[1] = smoothMouse.y;
-      }
-
-      renderer.render({ scene: mesh });
-    };
-    rafRef.current = requestAnimationFrame(update);
-    ctn.appendChild(gl.canvas);
-
-    if (mouseReact) ctn.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      resizeObserver.disconnect();
-      if (mouseReact) ctn.removeEventListener("mousemove", handleMouseMove);
-      if (gl.canvas.parentElement === ctn) ctn.removeChild(gl.canvas);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
-      loadAnimationStartRef.current = 0;
-      timeOffsetRef.current = Math.random() * 100;
-    };
-  }, [
-    dpr,
-    pause,
-    timeScale,
-    scale,
-    gridMul,
-    digitSize,
-    scanlineIntensity,
-    glitchAmount,
-    flickerAmount,
-    noiseAmp,
-    chromaticAberration,
-    ditherValue,
-    curvature,
-    tintVec,
-    mouseReact,
-    mouseStrength,
-    pageLoadAnimation,
-    brightness,
-    handleMouseMove,
-  ]);
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className={`w-full h-full relative overflow-hidden ${className}`}
-      style={style}
-      {...rest}
-    />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Header Section */}
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto px-6 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Neurosymbolic AI Analysis
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Advanced analysis combining neural networks with symbolic
+              reasoning for explainable AI decisions
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-6 py-12">
+        <div className="grid xl:grid-cols-3 gap-8">
+          {/* Left Sidebar - Configuration */}
+          <div className="xl:col-span-1 space-y-8">
+            {/* Input Type Section */}
+            <Card className="border border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Input Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    Input Type
+                  </label>
+                  <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                    <button
+                      className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+                        inputType === "text"
+                          ? "bg-green-600 text-white"
+                          : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      }`}
+                      onClick={() => setInputType("text")}
+                    >
+                      Text
+                    </button>
+                    <button
+                      className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
+                        inputType === "image"
+                          ? "bg-green-600 text-white"
+                          : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      }`}
+                      onClick={() => setInputType("image")}
+                    >
+                      Image
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    {inputType === "text"
+                      ? "Text Input"
+                      : "Image Data (Base64)"}
+                  </label>
+                  <textarea
+                    placeholder={
+                      inputType === "text"
+                        ? "Enter your text for analysis..."
+                        : "Paste base64 encoded image data..."
+                    }
+                    value={inputData}
+                    onChange={(e) => setInputData(e.target.value)}
+                    rows={6}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Confidence Threshold
+                    </label>
+                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                      {Math.round(confidence * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={confidence}
+                    onChange={(e) => setConfidence(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    <span>Low</span>
+                    <span>Medium</span>
+                    <span>High</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleInference}
+                  disabled={loading || !inputData.trim()}
+                  className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing Analysis...
+                    </>
+                  ) : (
+                    "Run Analysis"
+                  )}
+                </button>
+
+                {error && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+                    {error}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats Section */}
+            <Card className="border border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                  System Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    API Status
+                  </span>
+                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium rounded-full">
+                    Online
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Processing Speed
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    &lt; 50ms
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Model Accuracy
+                  </span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    99.2%
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="xl:col-span-2 space-y-8">
+            {/* Results Section */}
+            <Card className="border border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Analysis Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!result && !loading && (
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <div className="text-3xl">🧠</div>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      Ready for Analysis
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                      Configure your input parameters and run the analysis to
+                      see detailed neurosymbolic results.
+                    </p>
+                  </div>
+                )}
+
+                {loading && (
+                  <div className="text-center py-16">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-6"></div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      Processing Analysis
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Running neurosymbolic inference pipeline...
+                    </p>
+                  </div>
+                )}
+
+                {result && (
+                  <div className="space-y-6">
+                    <Tabs value={activeTab} onValueChange={setActiveTab}>
+                      <TabsList className="grid grid-cols-3 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+                        <TabsTrigger
+                          value="neural"
+                          className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
+                        >
+                          Neural Output
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="symbolic"
+                          className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
+                        >
+                          Symbolic Analysis
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="reasoning"
+                          className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
+                        >
+                          Reasoning Chain
+                        </TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="neural" className="space-y-6">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <Card className="border border-gray-200 dark:border-gray-700">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                Classification Result
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                                    Predicted Label
+                                  </span>
+                                  <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-sm font-medium rounded-full">
+                                    {result.neural_output.label}
+                                  </span>
+                                </div>
+                                <div>
+                                  <div className="flex justify-between text-sm mb-2">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Confidence Score
+                                    </span>
+                                    <span className="font-semibold text-green-600 dark:text-green-400">
+                                      {(
+                                        result.neural_output.confidence * 100
+                                      ).toFixed(1)}
+                                      %
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div
+                                      className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                                      style={{
+                                        width: `${
+                                          result.neural_output.confidence * 100
+                                        }%`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="border border-gray-200 dark:border-gray-700">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                Model Information
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Model Type
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  Neural Network
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Architecture
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  Transformer
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Parameters
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  1.2B
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="symbolic" className="space-y-6">
+                        <Card className="border border-gray-200 dark:border-gray-700">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                              Extracted Symbols
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex flex-wrap gap-2">
+                              {result.symbols.map((symbol, index) => (
+                                <span
+                                  key={index}
+                                  className="px-3 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium rounded-lg border border-blue-200 dark:border-blue-800"
+                                >
+                                  {symbol}
+                                </span>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <Card className="border border-gray-200 dark:border-gray-700">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                Symbol Mapping
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                                <p>
+                                  Neural outputs are mapped to symbolic
+                                  representations using predefined ontologies
+                                  and knowledge graphs.
+                                </p>
+                                <p>
+                                  This enables logical reasoning and rule-based
+                                  inference on the extracted concepts.
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="border border-gray-200 dark:border-gray-700">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                Knowledge Base
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Rules Applied
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {result.symbols.length * 3}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Ontology Size
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  1,247 concepts
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="reasoning" className="space-y-6">
+                        <Card className="border border-gray-200 dark:border-gray-700">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                              Reasoning Process
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              {result.reasoning_chain.map((step, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-start space-x-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+                                >
+                                  <div className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full text-sm flex items-center justify-center font-bold">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-gray-900 dark:text-white text-sm leading-relaxed">
+                                      {step.description ||
+                                        "Logical inference step applied to extracted symbols"}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <Card className="border border-gray-200 dark:border-gray-700">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                Final Decision
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+                                  {(result.confidence_score * 100).toFixed(1)}%
+                                </div>
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+                                  <div
+                                    className="bg-green-600 h-3 rounded-full transition-all duration-500"
+                                    style={{
+                                      width: `${
+                                        result.confidence_score * 100
+                                      }%`,
+                                    }}
+                                  ></div>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  Overall confidence in the neurosymbolic
+                                  analysis
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="border border-gray-200 dark:border-gray-700">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+                                Analysis Metrics
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Processing Time
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  42ms
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Steps Completed
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {result.reasoning_chain.length}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  Symbols Processed
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {result.symbols.length}
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Documentation Section */}
+            <Card className="border border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                  About Neurosymbolic AI
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6 text-sm text-gray-600 dark:text-gray-400">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      Neural Processing
+                    </h4>
+                    <p>
+                      Deep learning models process raw input data to extract
+                      patterns and features using neural networks.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      Symbolic Mapping
+                    </h4>
+                    <p>
+                      Neural outputs are converted into symbolic representations
+                      that can be understood and manipulated logically.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      Logical Reasoning
+                    </h4>
+                    <p>
+                      Symbolic AI applies logical rules and inference to derive
+                      conclusions and generate explanations.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

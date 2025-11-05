@@ -9,7 +9,7 @@ const navigation = [
   { name: "Dashboard", href: "/" },
   { name: "Analysis", href: "/analysis" },
   { name: "API", href: "/api" },
-  { name: "Documentation", href: "/documentation" },
+
   { name: "About", href: "/about" },
 ];
 
@@ -22,10 +22,10 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
                 NS
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                 Neurosymbolic AI
               </span>
             </Link>
@@ -50,7 +50,11 @@ export function Header() {
           <div className="flex items-center space-x-4">
             <ModeToggle />
             <Button variant="outline" size="sm" asChild>
-              <Link href="http://localhost:8000/docs" target="_blank">
+              <Link
+                href="https://coderspae.com/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 API Docs
               </Link>
             </Button>

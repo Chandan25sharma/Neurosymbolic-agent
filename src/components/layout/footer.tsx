@@ -4,7 +4,7 @@ export function Footer() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm mr-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center text-white font-bold text-sm mr-3">
               NS
             </div>
             <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -40,8 +40,8 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-400">
           <p>
-            © {new Date().getFullYear()} Chandan Sharma - Neurosymbolic AI
-            Framework. Combining neural networks with symbolic reasoning.
+            © {new Date().getFullYear()} coderspae - Neurosymbolic AI Framework.
+            Combining neural networks with symbolic reasoning.
           </p>
         </div>
       </div>
