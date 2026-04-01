@@ -198,3 +198,5 @@ This project is open source and available under the MIT License.
 ## Support
 
 For questions and support, please open an issue in the repository.
+
+Co-authored-by: Chandan Sharma <mrchandansharma25@gmail.com>
